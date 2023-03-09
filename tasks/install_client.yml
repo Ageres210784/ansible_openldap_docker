@@ -1,0 +1,46 @@
+---
+- name: OPENLDAP | Install client | Install openldap client pacages
+  ansible.builtin.apt:
+    name: "{{ client_packages }}"
+    update_cache: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: OPENLDAP | Install client | Ensure nsswitch and nslcd config
+  ansible.builtin.template:
+    src: client/{{item}}.j2
+    dest: /etc/{{item}}
+  with_items:
+    - nsswitch.conf
+    - nslcd.conf
+    - nscd.conf
+  notify: restart nslcd
+
+- name: OPENLDAP | Install client | Ensure pam common-session config
+  ansible.builtin.template:
+    src: client/common-session.j2
+    dest: /etc/pam.d/common-session
+  notify: restart nslcd
+
+- name: OPENLDAP | Install client | Ensure get ldap ssh key script
+  ansible.builtin.template:
+    src: client/get_ldap_ssh_key.sh.j2
+    dest: /usr/bin/get_ldap_ssh_key.sh
+    mode: '755'
+
+- name: OPENLDAP | Install client | Uncomment AuthorizedKeysCommand line at sshd_config
+  ansible.builtin.lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    state: present
+    regexp: '^#AuthorizedKeysCommand .*'
+    line: "AuthorizedKeysCommand /usr/bin/get_ldap_ssh_key.sh"
+  notify: restart sshd
+
+- name: OPENLDAP | Install client | Uncomment AuthorizedKeysCommandUser line at sshd_config
+  ansible.builtin.lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    state: present
+    regexp: '^#AuthorizedKeysCommandUser nobody'
+    line: "AuthorizedKeysCommandUser nobody"
+  notify: restart sshd
+

@@ -1,0 +1,14 @@
+---
+- name: restart nslcd
+  ansible.builtin.service:
+    name: "{{item}}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - nscd
+    - nslcd
+
+- name: restart sshd
+  ansible.builtin.service:
+    name: ssh
+    state: restarted

@@ -1,0 +1,79 @@
+---
+- name: OPENLDAP | Install | Ensure needed packages
+  ansible.builtin.apt:
+    name: "{{ server_packages }}"
+    update_cache: yes
+
+- name: OPENLDAP | Install | Ensure pip dependencies
+  ansible.builtin.pip:
+    name: "{{ pip_reauirements }}"
+
+- name: OPENLDAP | Install | Ensure directory {{ ldap_data }}
+  ansible.builtin.file:
+    path: "{{ ldap_data }}"
+    state: directory
+    recurse: yes
+    owner: 1001
+
+- name: OPENLDAP | Install | Start openldap container
+  community.docker.docker_compose:
+    project_name: openldap
+    definition:
+      version: '3'
+      services:
+        openldap:
+          image: docker.io/bitnami/openldap:2.6
+          container_name: openldap
+          ports:
+            - '{{ ldap_interface }}:{{ ldap_port }}:1389'
+            - '{{ ldap_interface }}:{{ ldap_ldaps_port }}:1636'
+          environment:
+            - LDAP_ROOT={{ ldap_root }}
+            - LDAP_ADMIN_USERNAME={{ ldap_admin_username }}
+            - LDAP_ADMIN_PASSWORD={{ ldap_admin_password }}
+            - LDAP_CONFIG_ADMIN_ENABLED=yes
+            - LDAP_CONFIG_ADMIN_USERNAME={{ ldap_admin_username }}
+            - LDAP_CONFIG_ADMIN_PASSWORD={{ ldap_admin_password }}
+            - LDAP_SKIP_DEFAULT_TREE=yes
+          volumes:
+            - '{{ ldap_data }}:/bitnami/openldap'
+
+- name: OPENLDAP | Install | Create organisation {{ ldap_root }}
+  community.general.ldap_entry:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "{{ ldap_root }}"
+    objectClass:
+      - dcObject
+      - organization
+    state: present
+    attributes:
+      dc: oom
+      o: example
+  register: connect_result
+  retries: 5
+  delay: 3
+  until: connect_result is not failed
+
+- name: OPENLDAP | Install | Create openssh-lpk in cn=config
+  community.general.ldap_entry:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},cn=config"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: cn=openssh-lpk,cn=schema,cn=config
+    objectClass: olcSchemaConfig
+    attributes:
+      olcAttributeTypes: >-
+        {0}( 1.3.6.1.4.1.24552.500.1.1.1.13 NAME 'sshPublicKey'
+        DESC 'MANDATORY: OpenSSH Public key'
+        EQUALITY octetStringMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.40 )
+      olcObjectClasses: >-
+        {0}( 1.3.6.1.4.1.24552.500.1.1.2.0 NAME 'ldapPublicKey'
+        DESC 'MANDATORY: OpenSSH LPK objectclass'
+        SUP top AUXILIARY MAY ( sshPublicKey $ uid ) )
+  register: config_result
+  failed_when:
+    - config_result.details is defined
+    - '{{ "Duplicate" not in config_result.details }}'
+    - not config_result.changed

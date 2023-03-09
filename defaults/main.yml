@@ -1,0 +1,63 @@
+---
+ldap_root: "dc=oom,dc=ag"
+ldap_admin_username: admin
+ldap_admin_password: adminpassword
+ldap_data: /tmp/openldap/data
+ldap_interface: "0.0.0.0"
+ldap_port: "1389"
+ldap_ldaps_port: "1636"
+
+server_packages:
+  - python3
+  - ldap-utils
+  # These are needed to be able to install python-ldap
+  - python3-pip
+  - libsasl2-dev
+  - python3-dev
+  - libldap2-dev
+  # - build-essential
+  # - lcov
+  # - valgrind
+  # - debconf-utils
+pip_reauirements:
+  - docker-compose
+  - python-ldap
+
+client_packages:
+  - nslcd
+  - ldap-utils
+
+ldap_server_list:
+  - 192.168.56.10
+
+
+
+
+groups_list:
+  - name: group1
+    description: "Group for tests"
+  - name: group2
+    description: "Group for tests"
+  - name: group3
+    description: "Group for tests"
+  - name: group4
+    description: "Group for tests"
+
+# Чтобы создать Hash пароля необходимо выполнить команду `slappasswd` после чего ввести пароль (по умолчанию высчитывается SSHA)
+users_list:
+  - firstName: UserName1
+    lastName: UserLastName1
+    passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz"
+    ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA2ecUyIhd89eflghlt5XLNKOA1p7ZOT3fRaaqi93bjiJ7uoc33CobaBssTZje7wn4OyOk9zDREbhp9etedxoxlnGSYiNKhZe6xfHkFeFgzGqYm+QyTvqvWEhIoWuFkBWk5COap77WIWy/xLbURW76wJPNzVJMSrShv2iUO6b9ipSR/hBPeI2Umu83ehIlMVXOVCaaAvQSkBot1omF0Ckmdh4LpwHJyyWtAJCTCVNNNJmXhyEZTArlzKXNlGvkJaxzNi1L/t/ut+WpP8xHcOIpOLYLepYNz+TBGavskN0PK7fu/B3M/jMnC+72oLv9eEcDieTN14O4HWIw7bJHbAuMMQ=="
+    groups:
+      - group1
+      - group2
+      - group3
+      - group4
+  - firstName: UserName2
+    lastName: UserLastName2
+    passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz"
+    ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA2ecUyIhd89eflghlt5XLNKOA1p7ZOT3fRaaqi93bjiJ7uoc33CobaBssTZje7wn4OyOk9zDREbhp9etedxoxlnGSYiNKhZe6xfHkFeFgzGqYm+QyTvqvWEhIoWuFkBWk5COap77WIWy/xLbURW76wJPNzVJMSrShv2iUO6b9ipSR/hBPeI2Umu83ehIlMVXOVCaaAvQSkBot1omF0Ckmdh4LpwHJyyWtAJCTCVNNNJmXhyEZTArlzKXNlGvkJaxzNi1L/t/ut+WpP8xHcOIpOLYLepYNz+TBGavskN0PK7fu/B3M/jMnC+72oLv9eEcDieTN14O4HWIw7bJHbAuMMQ=="
+    groups:
+      - group1
+      - group3

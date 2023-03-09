@@ -1,0 +1,39 @@
+---
+- name: OPENLDAP | Add group | Ensure ou=groups,{{ ldap_root }}
+  community.general.ldap_entry:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "ou=groups,{{ ldap_root }}"
+    objectClass:
+      - organizationalUnit
+
+- name: OPENLDAP | Add group | List of all groups' uidNumbers
+  community.general.ldap_search:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "ou=groups,{{ ldap_root }}"
+    scope: "subordinate"
+    attrs:
+      - "gidNumber"
+      - "groupName"
+  register: groupNumber_list
+
+# need install to a controller `pip install jmespath`
+- name: OPENLDAP | Add group | Calculate the last uidNumber
+  ansible.builtin.set_fact:
+    groupNumber_last: "{{ groupNumber_list | community.general.json_query ('results[*].gidNumber') | map('int') | max | default (15000)}}"
+
+- name: OPENLDAP | Add group | Create group cn={{ group.name }},ou=groups,{{ ldap_root }}
+  community.general.ldap_entry:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "cn={{ group.name }},ou=groups,{{ ldap_root }}"
+    objectClass:
+      - posixGroup
+    attributes:
+      gidNumber: "{% if group.gidNumber is defined %}{{ group.gidNumber }}{% else %}{{ groupNumber_last | int + 1 }}{% endif %}"
+      description: "{{ group.description }}"
+    state: present

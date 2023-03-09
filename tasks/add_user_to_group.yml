@@ -1,0 +1,11 @@
+---
+- name: Add user {{ user.firstName[0]|lower }}.{{ user.lastName|lower }} to groups
+  ldap_attrs:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "cn={{ item }},ou=groups,{{ ldap_root }}"
+    attributes:  
+      memberuid: "{{ user.firstName[0]|lower }}.{{ user.lastName|lower }}"
+    state: present
+  with_items: "{{ user.groups }}"

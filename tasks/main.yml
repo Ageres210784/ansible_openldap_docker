@@ -1,0 +1,40 @@
+---
+- name: OPENLDAP | Install
+  import_tasks: install_openldap.yml
+  tags: install_server
+
+- name: OPENLDAP | Add group
+  include_tasks:
+    file: add_group.yml
+    apply:
+      tags: add_group
+  tags: add_group
+  with_items: "{{ groups_list }}"
+  loop_control:
+    loop_var: group
+
+- name: OPENLDAP | Add user
+  include_tasks:
+    file: add_user.yml
+    apply:
+      tags: add_user
+  tags: add_user
+  with_items: "{{ users_list }}"
+  loop_control:
+    loop_var: user
+
+- name: OPENLDAP | Add user to group
+  include_tasks:
+    file: add_user_to_group.yml
+    apply:
+      tags: add_user_to_group
+  tags: add_user_to_group
+  with_items: "{{ users_list }}"
+  loop_control:
+    loop_var: user
+
+- name: OPENLDAP | Install client
+  import_tasks: install_client.yml
+  tags:
+    - install_client
+    - never
