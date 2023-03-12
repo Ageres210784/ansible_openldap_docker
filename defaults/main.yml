@@ -34,6 +34,9 @@ ldap_server_list:
 
 
 groups_list:
+  - name: sudo
+    description: "sudo group"
+    gidNumber: 27
   - name: group1
     description: "Group for tests"
   - name: group2
@@ -54,6 +57,7 @@ users_list:
       - group2
       - group3
       - group4
+      - sudo
   - firstName: UserName2
     lastName: UserLastName2
     passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz"
