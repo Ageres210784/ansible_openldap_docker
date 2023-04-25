@@ -8,7 +8,7 @@
     objectClass:
       - organizationalUnit
 
-- name: OPENLDAP | Add group | List of all groups' uidNumbers
+- name: OPENLDAP | Add group | List of all groups
   community.general.ldap_search:
     server_uri: "ldap://localhost:{{ ldap_port }}"
     bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
@@ -21,9 +21,13 @@
   register: groupNumber_list
 
 # need install to a controller `pip install jmespath`
+- name: OPENLDAP | Add group | List of all groups' uidNumbers
+  ansible.builtin.set_fact:
+    groupNumber_last: "{{ groupNumber_list | community.general.json_query ('results[*].gidNumber') + ['15000'] }}"
+
 - name: OPENLDAP | Add group | Calculate the last uidNumber
   ansible.builtin.set_fact:
-    groupNumber_last: "{{ groupNumber_list | community.general.json_query ('results[*].gidNumber') | map('int') | max | default (15000)}}"
+    groupNumber_last: "{{ groupNumber_last | map('int') | max }}"
 
 - name: OPENLDAP | Add group | Create group cn={{ group.name }},ou=groups,{{ ldap_root }}
   community.general.ldap_entry:

@@ -1,11 +1,33 @@
 ---
-ldap_root: "dc=oom,dc=ag"
+ldap_root: "dc=example,dc=com"
 ldap_admin_username: admin
 ldap_admin_password: adminpassword
 ldap_data: /tmp/openldap/data
 ldap_interface: "0.0.0.0"
 ldap_port: "1389"
-ldap_ldaps_port: "1636"
+ldaps_port: "1636"
+ldap_readonly_username: reader
+ldap_readonly_password: readonlypassword
+ldap_readonly_passwordHash: "{SSHA}yEeiIT8/0ucEW+TGr0/DaqnFw69ks9Fj" # slappasswd -s readonlypassword
+
+ldap_mdb_olcAccess: []
+# ldap_mdb_olcAccess:
+#   - >-
+#     {0}to *
+#     by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
+#     by * break
+#   - >-
+#     {1}to attrs=userPassword,shadowLastChange
+#     by self write
+#     by dn="cn={{ ldap_admin_username }},{{ ldap_root }}" write
+#     by anonymous auth
+#     by * none
+#   - >-
+#     {2}to *
+#     by self read
+#     by dn="cn={{ ldap_admin_username }},{{ ldap_root }}" write
+#     by dn="cn={{ ldap_readonly_username }},{{ ldap_root }}" read
+#     by * none
 
 server_packages:
   - python3
@@ -19,49 +41,30 @@ server_packages:
   # - lcov
   # - valgrind
   # - debconf-utils
-pip_reauirements:
+pip_requirements:
   - docker-compose
   - python-ldap
+
+groups_list: []
+# groups_list:
+#   - name: sudo
+#     description: "sudo group"
+#     gidNumber: 27
+
+# Чтобы создать Hash пароля необходимо выполнить команду `slappasswd` после чего ввести пароль (по умолчанию высчитывается SSHA)
+users_list: []
+# users_list:
+#   - firstName: UserName1
+#     lastName: UserLastName1
+#     passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz" # slappasswd -s password
+#     ssh_key: "ssh-rsa SOME_RSA_PUBLICK_KEY=="
+#     groups:
+#       - group1
+#       - sudo
 
 client_packages:
   - nslcd
   - ldap-utils
 
 ldap_server_list:
-  - 192.168.56.10
-
-
-
-
-groups_list:
-  - name: sudo
-    description: "sudo group"
-    gidNumber: 27
-  - name: group1
-    description: "Group for tests"
-  - name: group2
-    description: "Group for tests"
-  - name: group3
-    description: "Group for tests"
-  - name: group4
-    description: "Group for tests"
-
-# Чтобы создать Hash пароля необходимо выполнить команду `slappasswd` после чего ввести пароль (по умолчанию высчитывается SSHA)
-users_list:
-  - firstName: UserName1
-    lastName: UserLastName1
-    passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz"
-    ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA2ecUyIhd89eflghlt5XLNKOA1p7ZOT3fRaaqi93bjiJ7uoc33CobaBssTZje7wn4OyOk9zDREbhp9etedxoxlnGSYiNKhZe6xfHkFeFgzGqYm+QyTvqvWEhIoWuFkBWk5COap77WIWy/xLbURW76wJPNzVJMSrShv2iUO6b9ipSR/hBPeI2Umu83ehIlMVXOVCaaAvQSkBot1omF0Ckmdh4LpwHJyyWtAJCTCVNNNJmXhyEZTArlzKXNlGvkJaxzNi1L/t/ut+WpP8xHcOIpOLYLepYNz+TBGavskN0PK7fu/B3M/jMnC+72oLv9eEcDieTN14O4HWIw7bJHbAuMMQ=="
-    groups:
-      - group1
-      - group2
-      - group3
-      - group4
-      - sudo
-  - firstName: UserName2
-    lastName: UserLastName2
-    passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz"
-    ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA2ecUyIhd89eflghlt5XLNKOA1p7ZOT3fRaaqi93bjiJ7uoc33CobaBssTZje7wn4OyOk9zDREbhp9etedxoxlnGSYiNKhZe6xfHkFeFgzGqYm+QyTvqvWEhIoWuFkBWk5COap77WIWy/xLbURW76wJPNzVJMSrShv2iUO6b9ipSR/hBPeI2Umu83ehIlMVXOVCaaAvQSkBot1omF0Ckmdh4LpwHJyyWtAJCTCVNNNJmXhyEZTArlzKXNlGvkJaxzNi1L/t/ut+WpP8xHcOIpOLYLepYNz+TBGavskN0PK7fu/B3M/jMnC+72oLv9eEcDieTN14O4HWIw7bJHbAuMMQ=="
-    groups:
-      - group1
-      - group3
+  - ldapserver.example.com

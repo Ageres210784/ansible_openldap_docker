@@ -4,9 +4,9 @@
     name: "{{ server_packages }}"
     update_cache: yes
 
-- name: OPENLDAP | Install | Ensure pip dependencies
+- name: OPENLDAP | Install | Ensure pip requirements
   ansible.builtin.pip:
-    name: "{{ pip_reauirements }}"
+    name: "{{ pip_requirements }}"
 
 - name: OPENLDAP | Install | Ensure directory {{ ldap_data }}
   ansible.builtin.file:
@@ -26,7 +26,7 @@
           container_name: openldap
           ports:
             - '{{ ldap_interface }}:{{ ldap_port }}:1389'
-            - '{{ ldap_interface }}:{{ ldap_ldaps_port }}:1636'
+            - '{{ ldap_interface }}:{{ ldaps_port }}:1636'
           environment:
             - LDAP_ROOT={{ ldap_root }}
             - LDAP_ADMIN_USERNAME={{ ldap_admin_username }}
@@ -35,6 +35,7 @@
             - LDAP_CONFIG_ADMIN_USERNAME={{ ldap_admin_username }}
             - LDAP_CONFIG_ADMIN_PASSWORD={{ ldap_admin_password }}
             - LDAP_SKIP_DEFAULT_TREE=yes
+            - LDAP_ALLOW_ANON_BINDING=no
           volumes:
             - '{{ ldap_data }}:/bitnami/openldap'
 
@@ -77,3 +78,27 @@
     - config_result.details is defined
     - '{{ "Duplicate" not in config_result.details }}'
     - not config_result.changed
+
+- name: OPENLDAP | Install | Create readonly user
+  community.general.ldap_entry:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "cn={{ ldap_readonly_username }},{{ ldap_root }}"
+    objectClass:
+      - simpleSecurityObject
+      - organizationalRole
+    attributes:
+      userPassword: "{{ ldap_readonly_passwordHash }}"
+      cn: "{{ ldap_readonly_username }}"
+    state: present
+
+- name: OPENLDAP | Install | Create alcAccess for readonly user
+  community.general.ldap_attrs:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},cn=config"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: olcDatabase={2}mdb,cn=config
+    attributes:
+      olcAccess: "{{ ldap_mdb_olcAccess }}"
+    state: "exact"

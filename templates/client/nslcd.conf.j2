@@ -7,20 +7,20 @@ uid nslcd
 gid nslcd
 
 # The location at which the LDAP server(s) should be reachable.
-uri {% for address in ldap_server_list %}ldap://{{address}}:{{ldap_port}}/ {% endfor %}
+uri {% for address in ldap_server_list %}ldap://{{ address }}:{{ ldap_port }}/ {% endfor %}
 
 # The search base that will be used for all queries.
-base {{ldap_root}}
+base {{ ldap_root }}
 
 # The LDAP protocol version to use.
 #ldap_version 3
 
 # The DN to bind with for normal lookups.
-# binddn cn=admin,{{ldap_root}}
-# bindpw adminpassword
+binddn cn={{ ldap_readonly_username }},{{ ldap_root }}
+bindpw {{ ldap_readonly_password }}
 
 # The DN used for password modifications by root.
-#rootpwmoddn cn=admin,{{ldap_root}}
+#rootpwmoddn cn=admin,{{ ldap_root }}
 
 # SSL options
 ssl off
@@ -29,4 +29,3 @@ ssl off
 
 # The search scope.
 #scope sub
-
