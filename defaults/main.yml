@@ -11,23 +11,6 @@ ldap_readonly_password: readonlypassword
 ldap_readonly_passwordHash: "{SSHA}yEeiIT8/0ucEW+TGr0/DaqnFw69ks9Fj" # slappasswd -s readonlypassword
 
 ldap_mdb_olcAccess: []
-# ldap_mdb_olcAccess:
-#   - >-
-#     {0}to *
-#     by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
-#     by * break
-#   - >-
-#     {1}to attrs=userPassword,shadowLastChange
-#     by self write
-#     by dn="cn={{ ldap_admin_username }},{{ ldap_root }}" write
-#     by anonymous auth
-#     by * none
-#   - >-
-#     {2}to *
-#     by self read
-#     by dn="cn={{ ldap_admin_username }},{{ ldap_root }}" write
-#     by dn="cn={{ ldap_readonly_username }},{{ ldap_root }}" read
-#     by * none
 
 server_packages:
   - python3
@@ -37,30 +20,13 @@ server_packages:
   - libsasl2-dev
   - python3-dev
   - libldap2-dev
-  # - build-essential
-  # - lcov
-  # - valgrind
-  # - debconf-utils
 pip_requirements:
   - docker-compose
   - python-ldap
 
 groups_list: []
-# groups_list:
-#   - name: sudo
-#     description: "sudo group"
-#     gidNumber: 27
 
-# Чтобы создать Hash пароля необходимо выполнить команду `slappasswd` после чего ввести пароль (по умолчанию высчитывается SSHA)
 users_list: []
-# users_list:
-#   - firstName: UserName1
-#     lastName: UserLastName1
-#     passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz" # slappasswd -s password
-#     ssh_key: "ssh-rsa SOME_RSA_PUBLICK_KEY=="
-#     groups:
-#       - group1
-#       - sudo
 
 client_packages:
   - nslcd
