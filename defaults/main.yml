@@ -1,4 +1,6 @@
 ---
+ldap_image: "bitnami/openldap"
+ldap_version: "2.6"
 ldap_root: "dc=example,dc=com"
 ldap_admin_username: admin
 ldap_admin_password: adminpassword
@@ -9,6 +11,12 @@ ldaps_port: "1636"
 ldap_readonly_username: reader
 ldap_readonly_password: readonlypassword
 ldap_readonly_passwordHash: "{SSHA}yEeiIT8/0ucEW+TGr0/DaqnFw69ks9Fj" # slappasswd -s readonlypassword
+
+ldap_enable_tls: "yes"
+ldap_tls_cert_file: /opt/bitnami/openldap/certs/openldap.crt
+ldap_tls_key_file: /opt/bitnami/openldap/certs/openldap.key
+ldap_tls_ca_file: /opt/bitnami/openldap/certs/openldapCA.crt
+ldap_tls_cert_path: /path/to/certs
 
 ldap_mdb_olcAccess: []
 

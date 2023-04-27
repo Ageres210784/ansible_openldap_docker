@@ -37,6 +37,15 @@ ldap_mdb_olcAccess:
     by dn="cn={{ ldap_admin_username }},{{ ldap_root }}" write
     by dn="cn={{ ldap_readonly_username }},{{ ldap_root }}" read
     by * none
+  # - >-
+  #   to attrs=userPassword
+  #   by self write
+  #   by anonymous auth
+  #   by * none
+  # - >-
+  #   to *
+  #   by self write
+  #   by * read
 ```
 - `group_list` - list of groups. Example:
 ```yaml

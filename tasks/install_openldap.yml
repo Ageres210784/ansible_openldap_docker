@@ -8,12 +8,15 @@
   ansible.builtin.pip:
     name: "{{ pip_requirements }}"
 
-- name: OPENLDAP | Install | Ensure directory {{ ldap_data }}
+- name: OPENLDAP | Install | Ensure needed directories
   ansible.builtin.file:
-    path: "{{ ldap_data }}"
+    path: "{{ item }}"
     state: directory
     recurse: yes
     owner: 1001
+  with_items:
+    - "{{ ldap_data }}"
+    - "{{ ldap_tls_cert_path }}"
 
 - name: OPENLDAP | Install | Start openldap container
   community.docker.docker_compose:
@@ -22,7 +25,7 @@
       version: '3'
       services:
         openldap:
-          image: docker.io/bitnami/openldap:2.6
+          image: "{{ ldap_image }}:{{ ldap_version }}"
           container_name: openldap
           ports:
             - '{{ ldap_interface }}:{{ ldap_port }}:1389'
@@ -36,8 +39,13 @@
             - LDAP_CONFIG_ADMIN_PASSWORD={{ ldap_admin_password }}
             - LDAP_SKIP_DEFAULT_TREE=yes
             - LDAP_ALLOW_ANON_BINDING=no
+            - LDAP_ENABLE_TLS={{ ldap_enable_tls }}
+            - LDAP_TLS_CERT_FILE={{ ldap_tls_cert_file }}
+            - LDAP_TLS_KEY_FILE={{ ldap_tls_key_file }}
+            - LDAP_TLS_CA_FILE={{ ldap_tls_ca_file }}
           volumes:
             - '{{ ldap_data }}:/bitnami/openldap'
+            - '{{ ldap_tls_cert_path }}:/opt/bitnami/openldap/certs:ro'
 
 - name: OPENLDAP | Install | Create organisation {{ ldap_root }}
   community.general.ldap_entry:

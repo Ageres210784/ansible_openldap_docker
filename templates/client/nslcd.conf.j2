@@ -7,7 +7,7 @@ uid nslcd
 gid nslcd
 
 # The location at which the LDAP server(s) should be reachable.
-uri {% for address in ldap_server_list %}ldap://{{ address }}:{{ ldap_port }}/ {% endfor %}
+uri {% for address in ldap_server_list %}ldap{%if ldap_enable_tls == 'yes'%}s{%endif%}://{{ address }}:{%if ldap_enable_tls == 'yes'%}{{ ldaps_port }}{%else%}{{ ldap_port }}{%endif%}/ {% endfor %}
 
 # The search base that will be used for all queries.
 base {{ ldap_root }}

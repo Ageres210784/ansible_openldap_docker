@@ -1,5 +1,5 @@
 ---
-- name: OPENLDAP | Install client | Install openldap client pacages
+- name: OPENLDAP | Install client | Install openldap client packages
   ansible.builtin.apt:
     name: "{{ client_packages }}"
     update_cache: yes
@@ -43,4 +43,3 @@
     regexp: '^#AuthorizedKeysCommandUser nobody'
     line: "AuthorizedKeysCommandUser nobody"
   notify: restart sshd
-
