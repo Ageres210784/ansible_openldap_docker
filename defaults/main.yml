@@ -13,10 +13,11 @@ ldap_readonly_password: readonlypassword
 ldap_readonly_passwordHash: "{SSHA}yEeiIT8/0ucEW+TGr0/DaqnFw69ks9Fj" # slappasswd -s readonlypassword
 
 ldap_enable_tls: "yes"
-ldap_tls_cert_file: /opt/bitnami/openldap/certs/openldap.crt
-ldap_tls_key_file: /opt/bitnami/openldap/certs/openldap.key
-ldap_tls_ca_file: /opt/bitnami/openldap/certs/openldapCA.crt
-ldap_tls_cert_path: /path/to/certs
+ldap_tls_cert_path: /opt/bitnami/openldap/certs
+ldap_tls_cert_file_name: openldap.crt
+ldap_tls_key_file_name: openldap.key
+ldap_tls_ca_file_name: openldapCA.crt
+ldap_tls_cert_host_path: /path/to/certs
 
 ldap_mdb_olcAccess: []
 

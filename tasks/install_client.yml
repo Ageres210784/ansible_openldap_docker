@@ -43,3 +43,7 @@
     regexp: '^#AuthorizedKeysCommandUser nobody'
     line: "AuthorizedKeysCommandUser nobody"
   notify: restart sshd
+
+- name: OPENLDAP | Install client | Activating pam
+  ansible.builtin.shell: pam-auth-update --enable ldap --force
+  changed_when: False

@@ -25,7 +25,7 @@ bindpw {{ ldap_readonly_password }}
 # SSL options
 ssl off
 #tls_reqcert never
-#tls_cacertfile /etc/ssl/certs/ca-certificates.crt
+{%if not ldap_enable_tls%}#{%endif%}tls_cacertfile {{ ldap_tls_cert_host_path }}/{{ ldap_tls_ca_file_name }}
 
 # The search scope.
 #scope sub

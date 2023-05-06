@@ -16,7 +16,7 @@
     owner: 1001
   with_items:
     - "{{ ldap_data }}"
-    - "{{ ldap_tls_cert_path }}"
+    - "{{ ldap_tls_cert_host_path }}"
 
 - name: OPENLDAP | Install | Start openldap container
   community.docker.docker_compose:
@@ -40,12 +40,12 @@
             - LDAP_SKIP_DEFAULT_TREE=yes
             - LDAP_ALLOW_ANON_BINDING=no
             - LDAP_ENABLE_TLS={{ ldap_enable_tls }}
-            - LDAP_TLS_CERT_FILE={{ ldap_tls_cert_file }}
-            - LDAP_TLS_KEY_FILE={{ ldap_tls_key_file }}
-            - LDAP_TLS_CA_FILE={{ ldap_tls_ca_file }}
+            - LDAP_TLS_CERT_FILE={{ ldap_tls_cert_path }}/{{ ldap_tls_cert_file_name }}
+            - LDAP_TLS_KEY_FILE={{ ldap_tls_cert_path }}/{{ ldap_tls_key_file_name }}
+            - LDAP_TLS_CA_FILE={{ ldap_tls_cert_path }}/{{ ldap_tls_ca_file_name }}
           volumes:
             - '{{ ldap_data }}:/bitnami/openldap'
-            - '{{ ldap_tls_cert_path }}:/opt/bitnami/openldap/certs:ro'
+            - '{{ ldap_tls_cert_host_path }}:{{ ldap_tls_cert_path }}:ro'
 
 - name: OPENLDAP | Install | Create organisation {{ ldap_root }}
   community.general.ldap_entry:
