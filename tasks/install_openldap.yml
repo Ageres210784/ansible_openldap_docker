@@ -27,6 +27,7 @@
         openldap:
           image: "{{ ldap_image }}:{{ ldap_version }}"
           container_name: openldap
+          restart: always
           ports:
             - '{{ ldap_interface }}:{{ ldap_port }}:1389'
             - '{{ ldap_interface }}:{{ ldaps_port }}:1636'
