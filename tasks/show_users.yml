@@ -1,0 +1,14 @@
+---
+- name: OPENLDAP | Show users | Search users
+  community.general.ldap_search:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "ou=users,{{ ldap_root }}"
+    scope: "subordinate"
+    attrs: "{{ ldap_search_attrs }}"
+  register: users_list
+
+- name: OPENLDAP | Show users | Show users
+  ansible.builtin.debug:
+    var: users_list.results

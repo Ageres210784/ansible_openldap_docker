@@ -18,7 +18,7 @@
     - add_group
     - server
     - never
-  with_items: "{{ groups_list }}"
+  with_items: "{{ ldap_groups_list }}"
   loop_control:
     loop_var: group
 
@@ -34,7 +34,7 @@
     - add_user
     - server
     - never
-  with_items: "{{ users_list }}"
+  with_items: "{{ ldap_users_list }}"
   loop_control:
     loop_var: user
 
@@ -50,9 +50,29 @@
     - add_user_to_group
     - server
     - never
-  with_items: "{{ users_list }}"
+  with_items: "{{ ldap_users_list }}"
   loop_control:
     loop_var: user
+
+- name: OPENLDAP | Change users` attributes
+  include_tasks:
+    file: change_users_attributes.yml
+    apply:
+      tags:
+        - change_users_attributes
+        - never
+  tags:
+    - change_users_attributes
+    - never
+  with_items: "{{ ldap_users_list }}"
+  loop_control:
+    loop_var: changing_user
+
+- name: OPENLDAP | Show users
+  import_tasks: show_users.yml
+  tags:
+    - show_users
+    - never
 
 - name: OPENLDAP | Install client
   import_tasks: install_client.yml

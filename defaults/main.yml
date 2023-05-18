@@ -21,7 +21,7 @@ ldap_tls_cert_host_path: /path/to/certs
 
 ldap_mdb_olcAccess: []
 
-server_packages:
+ldap_server_packages:
   - python3
   - ldap-utils
   # These are needed to be able to install python-ldap
@@ -29,15 +29,23 @@ server_packages:
   - libsasl2-dev
   - python3-dev
   - libldap2-dev
-pip_requirements:
+ldap_pip_requirements:
   - docker-compose
   - python-ldap
 
-groups_list: []
+ldap_groups_list: []
 
-users_list: []
+ldap_users_list: []
 
-client_packages:
+ldap_search_attrs:
+  - uid
+  - mail
+  - displayName
+  - gidNumber
+# example for all attributes:
+# ldap_search_attrs: []
+
+ldap_client_packages:
   - nslcd
   - ldap-utils
 

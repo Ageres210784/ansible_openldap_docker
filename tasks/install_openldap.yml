@@ -1,12 +1,12 @@
 ---
 - name: OPENLDAP | Install | Ensure needed packages
   ansible.builtin.apt:
-    name: "{{ server_packages }}"
+    name: "{{ ldap_server_packages }}"
     update_cache: yes
 
 - name: OPENLDAP | Install | Ensure pip requirements
   ansible.builtin.pip:
-    name: "{{ pip_requirements }}"
+    name: "{{ ldap_pip_requirements }}"
 
 - name: OPENLDAP | Install | Ensure needed directories
   ansible.builtin.file:

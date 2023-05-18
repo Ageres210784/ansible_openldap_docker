@@ -39,5 +39,5 @@
       - posixGroup
     attributes:
       gidNumber: "{% if group.gidNumber is defined %}{{ group.gidNumber }}{% else %}{{ groupNumber_last | int + 1 }}{% endif %}"
-      description: "{{ group.description }}"
+      description: "{{ group.description | default ('No description') }}"
     state: present

@@ -8,6 +8,10 @@
     objectClass:
        - organizationalUnit
 
+- name: OPENLDAP | Add user | Set uid for user
+  ansible.builtin.set_fact:
+    user_id: "{{ user.uid | default( (user.firstName[0] + '.' + user.lastName) | lower ) }}"
+
 - name: OPENLDAP | Add user | List of all users' uidNumbers
   community.general.ldap_search:
     server_uri: "ldap://localhost:{{ ldap_port }}"
@@ -16,7 +20,6 @@
     dn: "ou=users,{{ ldap_root }}"
     scope: "subordinate"
     attrs:
-      - "gidNumber"
       - "uidNumber"
   register: uidNumbers_list
 
@@ -25,12 +28,12 @@
   ansible.builtin.set_fact:
     uidNumber: "{{ uidNumbers_list | community.general.json_query ('results[*].uidNumber') | max | default (10000) | int + 1 }}"
 
-- name: OPENLDAP | Add user | Create user uid={{ user.firstName[0]|lower }}.{{ user.lastName|lower }},ou=users,{{ ldap_root }}
+- name: OPENLDAP | Add user | Create user uid={{ user_id }},ou=users,{{ ldap_root }}
   community.general.ldap_entry:
     server_uri: "ldap://localhost:{{ ldap_port }}"
     bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
     bind_pw: "{{ ldap_admin_password }}"
-    dn: "uid={{ user.firstName[0]|lower }}.{{ user.lastName|lower }},ou=users,{{ ldap_root }}"
+    dn: "uid={{ user_id }},ou=users,{{ ldap_root }}"
     objectClass:
       - inetOrgPerson
       - posixAccount
@@ -44,16 +47,17 @@
       displayName: "{{ user.firstName }} {{ user.lastName }}"
       uidNumber: "{{ uidNumber }}"
       gidNumber: "{{ uidNumber }}"
-      homeDirectory: "/home/{{ user.firstName[0]|lower }}.{{ user.lastName|lower }}"
+      homeDirectory: "/home/{{ user_id }}"
       loginShell: /bin/bash
-      sshPublicKey: "{{ user.ssh_key }}"
+      sshPublicKey: "{{ user.ssh_key | default () }}"
+      mail: "{{ user.mail | default( user_id + '@example.com') }}"
     state: present
 
-- name: OPENLDAP | Add user | Create group for user {{ user.firstName[0]|lower }}.{{ user.lastName|lower }}
+- name: OPENLDAP | Add user | Create group for user {{ user_id }}
   include_tasks: add_group.yml
   with_items:
-    - name: "{{ user.firstName[0]|lower }}.{{ user.lastName|lower }}"
-      description: "Main group for user {{ user.firstName[0]|lower }}.{{ user.lastName|lower }}"
+    - name: "{{ user_id }}"
+      description: "Main group for user {{ user_id }}"
       gidNumber: "{{ uidNumber }}"
   loop_control:
     loop_var: group
