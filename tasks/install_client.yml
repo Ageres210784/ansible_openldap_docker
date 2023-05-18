@@ -1,7 +1,7 @@
 ---
 - name: OPENLDAP | Install client | Install openldap client packages
   ansible.builtin.apt:
-    name: "{{ client_packages }}"
+    name: "{{ ldap_client_packages }}"
     update_cache: yes
   environment:
     DEBIAN_FRONTEND: noninteractive

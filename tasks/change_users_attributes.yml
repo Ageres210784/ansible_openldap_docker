@@ -1,0 +1,21 @@
+---
+- name: OPENLDAP | Change users attributes | Set uid for user
+  ansible.builtin.set_fact:
+    user_id: "{{ changing_user.uid | default( (changing_user.firstName[0] + '.' + changing_user.lastName) | lower ) }}"
+
+- name: OPENLDAP | Change users attributes | Create user {{ user_id }}
+  include_tasks: add_user.yml
+  with_items:
+    - "{{ changing_user }}"
+  loop_control:
+    loop_var: user
+
+- name: OPENLDAP | Change users attributes | Create user uid={{ user_id }},ou=users,{{ ldap_root }}
+  community.general.ldap_attrs:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "uid={{ user_id }},ou=users,{{ ldap_root }}"
+    attributes: "{{ changing_user.attributes }}"
+    state: "exact"
+  when: changing_user.attributes is defined
