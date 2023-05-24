@@ -45,9 +45,13 @@ ldap_search_attrs:
 # example for all attributes:
 # ldap_search_attrs: []
 
+ldap_add_memberof: false
+
 ldap_client_packages:
   - nslcd
   - ldap-utils
 
 ldap_server_list:
   - ldapserver.example.com
+
+ldap_passwd_filter: "(objectClass=posixAccount)"

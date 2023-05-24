@@ -1,7 +1,7 @@
 ---
 - name: OPENLDAP | Change users attributes | Set uid for user
   ansible.builtin.set_fact:
-    user_id: "{{ changing_user.uid | default( (changing_user.firstName[0] + '.' + changing_user.lastName) | lower ) }}"
+    user_id: "{%if changing_user.uid is defined%}{{ changing_user.uid }}{%else%}{{ (changing_user.firstName[0] + '.' + changing_user.lastName) | lower }}{%endif%}"
 
 - name: OPENLDAP | Change users attributes | Create user {{ user_id }}
   include_tasks: add_user.yml

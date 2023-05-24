@@ -8,6 +8,15 @@
     objectClass:
       - organizationalUnit
 
+- name: OPENLDAP | Add group | Ensure ou=authgroups,{{ ldap_root }}
+  community.general.ldap_entry:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "ou=authgroups,{{ ldap_root }}"
+    objectClass:
+      - organizationalUnit
+
 - name: OPENLDAP | Add group | List of all groups
   community.general.ldap_search:
     server_uri: "ldap://localhost:{{ ldap_port }}"

@@ -68,7 +68,13 @@ ldap_users_list:
     groups: # optional
       - group1
       - sudo
+    authgroups: # optional
+      - host1
     attributes: {} # optional
+```
+- `ldap_passwd_filter` - filter for authentication users in hosts. Example:
+```yml
+ldap_passwd_filter: "(&(objectClass=posixAccount)(memberOf=cn={{ ansible_facts.hostname }},ou=authgroups,dc=oom,dc=ag))"
 ```
 
 Example Playbook
@@ -97,7 +103,7 @@ Run for serch users
 Use variable `ldap_search_attrs` for change the displayed attributes ([] - for all attrs)
 Example in defaults
 ```
-ansible-playbook run-openldap.yml -l ldap-client -t show_users
+ansible-playbook run-openldap.yml -l ldap-server -t show_users
 ```
 Run for change users' attributes
 Use variable
@@ -108,7 +114,7 @@ ldap_users_list:
       mail: "u.userlastname1@example.com"
 ```
 ```
-ansible-playbook run-openldap.yml -l ldap-client -t change_users_attributes
+ansible-playbook run-openldap.yml -l ldap-server -t change_users_attributes
 ```
 
 License

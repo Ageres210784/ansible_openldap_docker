@@ -10,7 +10,7 @@
 
 - name: OPENLDAP | Add user | Set uid for user
   ansible.builtin.set_fact:
-    user_id: "{{ user.uid | default( (user.firstName[0] + '.' + user.lastName) | lower ) }}"
+    user_id: "{%if user.uid is defined%}{{ user.uid }}{%else%}{{ (user.firstName[0] + '.' + user.lastName) | lower }}{%endif%}"
 
 - name: OPENLDAP | Add user | List of all users' uidNumbers
   community.general.ldap_search:

@@ -12,6 +12,12 @@ uri {% for address in ldap_server_list %}ldap{%if ldap_enable_tls == 'yes'%}s{%e
 # The search base that will be used for all queries.
 base {{ ldap_root }}
 
+base passwd ou=users,{{ ldap_root }}
+
+base group ou=groups,{{ ldap_root }}
+
+filter passwd {{ ldap_passwd_filter }}
+
 # The LDAP protocol version to use.
 #ldap_version 3
 
@@ -25,7 +31,7 @@ bindpw {{ ldap_readonly_password }}
 # SSL options
 ssl off
 #tls_reqcert never
-{%if not ldap_enable_tls%}#{%endif%}tls_cacertfile {{ ldap_tls_cert_host_path }}/{{ ldap_tls_ca_file_name }}
+{%if ldap_enable_tls == 'no'%}#{%endif%}tls_cacertfile {{ ldap_tls_cert_host_path }}/{{ ldap_tls_ca_file_name }}
 
 # The search scope.
 #scope sub

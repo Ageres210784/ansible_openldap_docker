@@ -16,12 +16,6 @@
     - nscd.conf
   notify: restart nslcd
 
-- name: OPENLDAP | Install client | Ensure pam common-session config
-  ansible.builtin.template:
-    src: client/common-session.j2
-    dest: /etc/pam.d/common-session
-  notify: restart nslcd
-
 - name: OPENLDAP | Install client | Ensure get ldap ssh key script
   ansible.builtin.template:
     src: client/get_ldap_ssh_key.sh.j2

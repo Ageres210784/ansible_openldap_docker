@@ -82,11 +82,11 @@
         {0}( 1.3.6.1.4.1.24552.500.1.1.2.0 NAME 'ldapPublicKey'
         DESC 'MANDATORY: OpenSSH LPK objectclass'
         SUP top AUXILIARY MAY ( sshPublicKey $ uid ) )
-  register: config_result
+  register: config_openssh_lpk
   failed_when:
-    - config_result.details is defined
-    - '{{ "Duplicate" not in config_result.details }}'
-    - not config_result.changed
+    - config_openssh_lpk.details is defined
+    - '{{ "Duplicate" not in config_openssh_lpk.details }}'
+    - not config_openssh_lpk.changed
 
 - name: OPENLDAP | Install | Create readonly user
   community.general.ldap_entry:
@@ -111,3 +111,37 @@
     attributes:
       olcAccess: "{{ ldap_mdb_olcAccess }}"
     state: "exact"
+
+- name: OPENLDAP | Install | Add module memberof
+  block:
+    - name: OPENLDAP | Install | Create cn=module,cn=config
+      community.general.ldap_entry:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: cn=module,cn=config
+        objectClass:
+          - olcModuleList
+        attributes:
+          cn: module
+          olcModulePath: /opt/bitnami/openldap/lib/openldap
+          olcModuleLoad: memberof.la
+      register: config_module
+      failed_when:
+        - config_module.details is defined
+        - '{{ "handler exited with 1" not in config_module.details }}'
+        - not config_module.changed
+
+    - name: OPENLDAP | Install | Create olcOverlay=memberof,olcDatabase={2}mdb,cn=config
+      community.general.ldap_entry:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: olcOverlay=memberof,olcDatabase={2}mdb,cn=config
+        objectClass:
+          - olcOverlayConfig
+          - olcMemberOf
+        attributes:
+          olcOverlay: memberof
+          olcMemberOfRefint: "TRUE"
+  when: ldap_add_memberof
