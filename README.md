@@ -19,7 +19,9 @@ All variables you can see in defaults.
 
 To change:
 - `ldap_root` - domain/organisation
-- `ldap_mdb_olcAccess` - olcAccess. Example:
+- `ldap_mdb_olcAccess` - olcAccess.
+
+Example:
 ```yaml
 ldap_mdb_olcAccess:
   - >-
@@ -56,7 +58,9 @@ ldap_groups_list:
     gidNumber: 27 # optional
   - name: group1
 ```
-- `ldap_users_list` - list of users and groups in which the user is included. Example:
+- `ldap_users_list` - list of users and groups in which the user is included.
+
+Example:
 ```yaml
 ldap_users_list:
   - firstName: UserName1
@@ -72,7 +76,9 @@ ldap_users_list:
       sshPublicKey: "ssh-rsa SOME_RSA_PUBLICK_KEY=="
       mail: "u.userlastname1@example.com"
 ```
-- `ldap_passwd_filter` - filter for authentication users in hosts. Example:
+- `ldap_passwd_filter` - filter for authentication users in hosts.
+
+Example:
 ```yml
 ldap_passwd_filter: "(&(objectClass=posixAccount)(memberOf=cn={{ ansible_facts.hostname }},ou=authgroups,dc=oom,dc=ag))"
 ```
@@ -99,13 +105,13 @@ Run in client
 ```
 ansible-playbook run-openldap.yml -l ldap-client -t client
 ```
-Run for serch users
-Use variable `ldap_search_attrs` for change the displayed attributes ([] - for all attrs)
-Example in defaults
+Run for serch users  
+Use variable `ldap_search_attrs` for change the displayed attributes ([] - for all attrs)  
+Example in defaults:
 ```
-ansible-playbook run-openldap.yml -l ldap-server -t show_users
+ansible-playbook run-openldap.yml -l ldap-server -t show_users -e "ldap_search_attrs=[]"
 ```
-Run for change users' attributes
+Run for change users' attributes  
 Use variable
 ```yaml
 ldap_users_list:
@@ -116,8 +122,9 @@ ldap_users_list:
 ```
 ansible-playbook run-openldap.yml -l ldap-server -t change_users_attributes
 ```
-Run for block users
-Use variable `ldap_users_list.attributes` example:
+Run for block users  
+Use variable `ldap_users_list.attributes` (see `man slapo-ppolicy` or [link](https://www.openldap.org/software/man.cgi?query=slapo-ppolicy&sektion=5&apropos=0&manpath=OpenLDAP+2.6-Release))  
+Example :
 ```yaml
 ldap_users_list:
   - uid: u.userlastname1
@@ -127,7 +134,7 @@ ldap_users_list:
 ```
 ansible-playbook run-openldap.yml -l ldap-server -t change_users_attributes
 ```
-Run for unblock users
+Run for unblock users  
 Use variable `ldap_unblock_users_list` example:
 ```yaml
 ldap_unblock_users_list:
