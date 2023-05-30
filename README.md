@@ -116,6 +116,26 @@ ldap_users_list:
 ```
 ansible-playbook run-openldap.yml -l ldap-server -t change_users_attributes
 ```
+Run for block users
+Use variable `ldap_users_list.attributes` example:
+```yaml
+ldap_users_list:
+  - uid: u.userlastname1
+    attributes:
+     pwdAccountLockedTime: 000001010000Z
+```
+```
+ansible-playbook run-openldap.yml -l ldap-server -t change_users_attributes
+```
+Run for unblock users
+Use variable `ldap_unblock_users_list` example:
+```yaml
+ldap_unblock_users_list:
+  - u.userlastname1
+```
+```
+ansible-playbook run-openldap.yml -l ldap-server -t unblock
+```
 
 License
 -------

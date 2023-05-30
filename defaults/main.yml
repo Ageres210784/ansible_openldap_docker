@@ -66,6 +66,8 @@ ldap_groups_list: []
 
 ldap_users_list: []
 
+ldap_unblock_users_list: []
+
 ldap_search_attrs:
   - uid
   - mail
