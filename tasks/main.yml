@@ -32,6 +32,8 @@
         - never
   tags:
     - add_user
+    - change_users_attributes
+    - change_password
     - server
     - never
   with_items: "{{ ldap_users_list }}"
@@ -53,20 +55,6 @@
   with_items: "{{ ldap_users_list }}"
   loop_control:
     loop_var: user
-
-- name: OPENLDAP | Change users` attributes
-  include_tasks:
-    file: change_users_attributes.yml
-    apply:
-      tags:
-        - change_users_attributes
-        - never
-  tags:
-    - change_users_attributes
-    - never
-  with_items: "{{ ldap_users_list }}"
-  loop_control:
-    loop_var: changing_user
 
 - name: OPENLDAP | Show users
   import_tasks: show_users.yml

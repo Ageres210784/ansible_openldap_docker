@@ -20,6 +20,28 @@ ldap_tls_ca_file_name: openldapCA.crt
 ldap_tls_cert_host_path: /path/to/certs
 
 ldap_mdb_olcAccess: []
+ldap_olcmoduleload:
+  - memberof.so
+  - ppolicy.so
+
+ldap_ppolicy_default:
+  # pwdCheckModule: pwcheck.la    #Название пользовательского модуля проверки качества пароля
+  pwdMaxAge: 31536000           #Время действия пароля в с (год)
+  pwdExpireWarning: 2592000     #Предупреждение об устаревании в с (за 30 дней)
+  pwdInHistory: 10              #Количество паролей, хранимых для ограничения повторов (было у нас - 400, кажется излишним)
+  pwdCheckQuality: 1            #0(def) - нет проверок качества пароля, 1 - проверяет если может, пропускает если не может проверить, 2 - если не может проверить, не пропускает
+  pwdMaxFailure: 3              #Если больше 0, определяет количество попыток ввода неверного пароля
+  pwdLockout: "TRUE"            #TRUE - блокирует при неверных паролях, FALSE - не делает ничего
+  pwdLockoutDuration: 5         #Блокировка на указанное количество с, 0(def) - до разблокировки админом (5 секунд)
+  pwdGraceAuthNLimit: 2         #Период отложенной блокировки при устаревании пароля. 0(def) - пароль устаревает мгновенно по достижении срока устаревания
+  pwdFailureCountInterval: 0    #Сброс счетчика неудачных вводов пароля в с. 0(def) - только при удачном вводе
+  pwdMustChange: "FALSE"        #Необходимость пользователю сменить пароль при разблокировке учетки. FALSE(def) - менять пароль не обязательно
+  pwdMinLength: 16              #Минимальное количество символов в пароле
+  pwdAllowUserChange: "TRUE"    #Разрешено ли пользователям менять свои пароли. TRUE(def) - разрешено
+  pwdSafeModify: "TRUE"         #Нужно ли пользователю отправлять свой старый пароль при его смене. FALSE(def) - не нужно
+  pwdMinAge: 0                  #Минимальное временем (в с) между сменами пароля.
+
+ldap_add_modules: true
 
 ldap_server_packages:
   - python3
@@ -44,8 +66,6 @@ ldap_search_attrs:
   - gidNumber
 # example for all attributes:
 # ldap_search_attrs: []
-
-ldap_add_memberof: false
 
 ldap_client_packages:
   - nslcd

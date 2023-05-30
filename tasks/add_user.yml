@@ -11,6 +11,7 @@
 - name: OPENLDAP | Add user | Set uid for user
   ansible.builtin.set_fact:
     user_id: "{%if user.uid is defined%}{{ user.uid }}{%else%}{{ (user.firstName[0] + '.' + user.lastName) | lower }}{%endif%}"
+  tags: always
 
 - name: OPENLDAP | Add user | List of all users' uidNumbers
   community.general.ldap_search:
@@ -40,7 +41,6 @@
       - shadowAccount
       - ldapPublicKey
     attributes:
-      userPassword: "{{ user.passwordHash }}"
       sn: "{{ user.lastName }}"
       givenName: "{{ user.firstName }}"
       cn: "{{ user.firstName }} {{ user.lastName }}"
@@ -49,8 +49,6 @@
       gidNumber: "{{ uidNumber }}"
       homeDirectory: "/home/{{ user_id }}"
       loginShell: /bin/bash
-      sshPublicKey: "{{ user.ssh_key | default () }}"
-      mail: "{{ user.mail | default( user_id + '@example.com') }}"
     state: present
 
 - name: OPENLDAP | Add user | Create group for user {{ user_id }}
@@ -61,3 +59,24 @@
       gidNumber: "{{ uidNumber }}"
   loop_control:
     loop_var: group
+
+- name: OPENLDAP | Add user | Change attributes for user uid={{ user_id }},ou=users,{{ ldap_root }}
+  community.general.ldap_attrs:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "uid={{ user_id }},ou=users,{{ ldap_root }}"
+    attributes: "{{ user.attributes }}"
+    state: "exact"
+  when: user.attributes is defined
+  tags: change_users_attributes
+
+- name: OPENLDAP | Add user | Change password for user uid={{ user_id }},ou=users,{{ ldap_root }}
+  community.general.ldap_passwd:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "uid={{ user_id }},ou=users,{{ ldap_root }}"
+    passwd: "{{ user.password }}"
+  when: user.password is defined
+  tags: change_password

@@ -59,18 +59,18 @@ ldap_groups_list:
 - `ldap_users_list` - list of users and groups in which the user is included. Example:
 ```yaml
 ldap_users_list:
-  - uid: u.userlastname1 # optional
-    firstName: UserName1
+  - firstName: UserName1
     lastName: UserLastName1
-    passwordHash: "{SSHA}2EQP9Ki9O2hbc/n0F3hSG7P2YOEHpmnz" # slappasswd -s password
-    ssh_key: "ssh-rsa SOME_RSA_PUBLICK_KEY==" # optional
-    mail: "u.userlastname1@example.com" # optional
+    uid: u.userlastname1 # optional
+    password: "some-password" # optional
     groups: # optional
       - group1
       - sudo
     authgroups: # optional
       - host1
-    attributes: {} # optional
+    attributes: #{} optional
+      sshPublicKey: "ssh-rsa SOME_RSA_PUBLICK_KEY=="
+      mail: "u.userlastname1@example.com"
 ```
 - `ldap_passwd_filter` - filter for authentication users in hosts. Example:
 ```yml

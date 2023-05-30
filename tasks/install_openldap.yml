@@ -57,7 +57,6 @@
     objectClass:
       - dcObject
       - organization
-    state: present
     attributes:
       dc: oom
       o: example
@@ -100,7 +99,6 @@
     attributes:
       userPassword: "{{ ldap_readonly_passwordHash }}"
       cn: "{{ ldap_readonly_username }}"
-    state: present
 
 - name: OPENLDAP | Install | Create alcAccess for readonly user
   community.general.ldap_attrs:
@@ -112,25 +110,28 @@
       olcAccess: "{{ ldap_mdb_olcAccess }}"
     state: "exact"
 
-- name: OPENLDAP | Install | Add module memberof
+- name: OPENLDAP | Install | Add modules
   block:
-    - name: OPENLDAP | Install | Create cn=module,cn=config
+    - name: OPENLDAP | Install | Create cn=module{0},cn=config
       community.general.ldap_entry:
         server_uri: "ldap://localhost:{{ ldap_port }}"
         bind_dn: "cn={{ ldap_admin_username }},cn=config"
         bind_pw: "{{ ldap_admin_password }}"
-        dn: cn=module,cn=config
+        dn: cn=module{0},cn=config
         objectClass:
           - olcModuleList
         attributes:
-          cn: module
+          cn: module{0}
           olcModulePath: /opt/bitnami/openldap/lib/openldap
-          olcModuleLoad: memberof.la
-      register: config_module
-      failed_when:
-        - config_module.details is defined
-        - '{{ "handler exited with 1" not in config_module.details }}'
-        - not config_module.changed
+
+    - name: OPENLDAP | Install | Add olcModuleLoad to cn=module{0},cn=config
+      community.general.ldap_attrs:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: cn=module{0},cn=config
+        attributes:
+          olcModuleLoad: "{{ ldap_olcmoduleload }}"
 
     - name: OPENLDAP | Install | Create olcOverlay=memberof,olcDatabase={2}mdb,cn=config
       community.general.ldap_entry:
@@ -144,4 +145,52 @@
         attributes:
           olcOverlay: memberof
           olcMemberOfRefint: "TRUE"
-  when: ldap_add_memberof
+
+    - name: OPENLDAP | Install | Ensure ou=pwPolicies
+      community.general.ldap_entry:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "ou=pwPolicies,{{ ldap_root }}"
+        objectClass:
+          - organizationalUnit
+
+    - name: OPENLDAP | Install | Create default ppolicy
+      community.general.ldap_entry:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "cn=default,ou=pwPolicies,{{ ldap_root }}"
+        objectClass:
+          - applicationProcess
+          - pwdPolicy
+        attributes:
+          cn: default
+          pwdAttribute: 2.5.4.35
+
+    - name: OPENLDAP | Install | Change default ppolicy
+      community.general.ldap_attrs:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "cn=default,ou=pwPolicies,{{ ldap_root }}"
+        attributes: "{{ ldap_ppolicy_default }}"
+        state: exact
+
+    - name: OPENLDAP | Install | Create olcOverlay=ppolicy,olcDatabase={2}mdb,cn=config
+      community.general.ldap_entry:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: olcOverlay=ppolicy,olcDatabase={2}mdb,cn=config
+        objectClass:
+          - olcOverlayConfig
+          - olcPPolicyConfig
+        attributes:
+          olcOverlay: ppolicy
+          olcPPolicyDefault: "cn=default,ou=pwPolicies,{{ ldap_root }}"
+          olcPPolicyHashCleartext: "FALSE"
+          olcPPolicyUseLockout: "FALSE"
+          olcPPolicyForwardUpdates: "FALSE"
+
+  when: ldap_add_modules
