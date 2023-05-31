@@ -99,6 +99,7 @@
     attributes:
       userPassword: "{{ ldap_readonly_passwordHash }}"
       cn: "{{ ldap_readonly_username }}"
+      pwdPolicySubentry: "cn=reader,ou=pwPolicies,{{ ldap_root }}"
 
 - name: OPENLDAP | Install | Create alcAccess for readonly user
   community.general.ldap_attrs:
@@ -155,27 +156,29 @@
         objectClass:
           - organizationalUnit
 
-    - name: OPENLDAP | Install | Create default ppolicy
+    - name: OPENLDAP | Install | Create ppolices
       community.general.ldap_entry:
         server_uri: "ldap://localhost:{{ ldap_port }}"
         bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
         bind_pw: "{{ ldap_admin_password }}"
-        dn: "cn=default,ou=pwPolicies,{{ ldap_root }}"
+        dn: "cn={{ item.name }},ou=pwPolicies,{{ ldap_root }}"
         objectClass:
           - applicationProcess
           - pwdPolicy
         attributes:
-          cn: default
+          cn: "{{ item.name }}"
           pwdAttribute: 2.5.4.35
+      with_items: "{{ ldap_ppolicies }}"
 
-    - name: OPENLDAP | Install | Change default ppolicy
+    - name: OPENLDAP | Install | Change ppolicies
       community.general.ldap_attrs:
         server_uri: "ldap://localhost:{{ ldap_port }}"
         bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
         bind_pw: "{{ ldap_admin_password }}"
-        dn: "cn=default,ou=pwPolicies,{{ ldap_root }}"
-        attributes: "{{ ldap_ppolicy_default }}"
+        dn: "cn={{ item.name }},ou=pwPolicies,{{ ldap_root }}"
+        attributes: "{{ item.policies }}"
         state: exact
+      with_items: "{{ ldap_ppolicies }}"
 
     - name: OPENLDAP | Install | Create olcOverlay=ppolicy,olcDatabase={2}mdb,cn=config
       community.general.ldap_entry:
