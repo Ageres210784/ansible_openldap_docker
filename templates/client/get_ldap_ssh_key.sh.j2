@@ -7,6 +7,6 @@ READER_PASSWORD="{{ ldap_readonly_password }}"
 
 SSH_USER=$1
 
-KEY=$(ldapsearch -D "${READER_LOGIN}" -w "${READER_PASSWORD}" -LLL -o ldif-wrap=no -c -H "${LDAP_URI}" -b "${BASE_DN}" -S sshPublicKey "(&(uid=${SSH_USER})(sshPublicKey=*))" sshPublicKey | grep -v 'dn:' | perl -pe 's/sshPublicKey: //;')
+KEY=$(ldapsearch -D "${READER_LOGIN}" -w "${READER_PASSWORD}" -LLL -o ldif-wrap=no -c -H "${LDAP_URI}" -b "${BASE_DN}" -S sshPublicKey "(&(uid=${SSH_USER})(sshPublicKey=*)(!(pwdAccountLockedTime=*)))" sshPublicKey | grep -v 'dn:' | perl -pe 's/sshPublicKey: //;')
 
 echo "${KEY}"

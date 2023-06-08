@@ -67,3 +67,15 @@
   tags:
     - install_client
     - client
+
+- name: unblock user
+  community.general.ldap_attrs:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "uid={{ item }},ou=users,{{ ldap_root }}"
+    attributes:
+      pwdAccountLockedTime: 000001010000Z
+    state: absent
+  with_items: "{{ ldap_unblock_users_list }}"
+  tags: unblock
