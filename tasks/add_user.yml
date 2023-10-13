@@ -69,7 +69,7 @@
     attributes: "{{ user.attributes }}"
     state: "exact"
   when: user.attributes is defined
-  tags: change_users_attributes
+  tags: change_user_attributes
 
 - name: OPENLDAP | Add user | Change password for user uid={{ user_id }},ou=users,{{ ldap_root }}
   community.general.ldap_passwd:
@@ -79,4 +79,4 @@
     dn: "uid={{ user_id }},ou=users,{{ ldap_root }}"
     passwd: "{{ user.password }}"
   when: user.password is defined
-  tags: change_password
+  tags: change_user_password

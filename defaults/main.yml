@@ -1,7 +1,9 @@
 ---
 ldap_image: "bitnami/openldap"
 ldap_version: "2.6"
-ldap_root: "dc=example,dc=com"
+ldap_root: "dc={{ ldap_root_dc }},dc=com"
+ldap_root_dc: "example"
+ldap_organisation: "example.com"
 ldap_admin_username: admin
 ldap_admin_password: adminpassword
 ldap_data: /tmp/openldap/data
@@ -17,9 +19,26 @@ ldap_tls_cert_path: /opt/bitnami/openldap/certs
 ldap_tls_cert_file_name: openldap.crt
 ldap_tls_key_file_name: openldap.key
 ldap_tls_ca_file_name: openldapCA.crt
-ldap_tls_cert_host_path: /path/to/certs
+ldap_tls_cert_host_path: /tmp/openldap/certs
 
-ldap_mdb_olcAccess: []
+ldap_mdb_olcAccess:
+  - >-
+    {0}to *
+    by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
+    by * break
+  - >-
+    {1}to attrs=userPassword,shadowLastChange
+    by self write
+    by dn="cn={{ ldap_admin_username }},{{ ldap_root }}" write
+    by anonymous auth
+    by * none
+  - >-
+    {2}to *
+    by self read
+    by dn="cn={{ ldap_admin_username }},{{ ldap_root }}" write
+    by dn="cn={{ ldap_readonly_username }},{{ ldap_root }}" read
+    by * none
+
 ldap_olcmoduleload:
   - memberof.so
   - ppolicy.so

@@ -120,7 +120,7 @@ ldap_users_list:
       mail: "u.userlastname1@example.com"
 ```
 ```
-ansible-playbook run-openldap.yml -l ldap-server -t change_users_attributes
+ansible-playbook run-openldap.yml -l ldap-server -t change_user_attributes
 ```
 Run for block users  
 Use variable `ldap_users_list.attributes` (see `man slapo-ppolicy` or [link](https://www.openldap.org/software/man.cgi?query=slapo-ppolicy&sektion=5&apropos=0&manpath=OpenLDAP+2.6-Release))  
@@ -132,7 +132,7 @@ ldap_users_list:
      pwdAccountLockedTime: 000001010000Z
 ```
 ```
-ansible-playbook run-openldap.yml -l ldap-server -t change_users_attributes
+ansible-playbook run-openldap.yml -l ldap-server -t change_user_attributes
 ```
 Run for unblock users  
 Use variable `ldap_unblock_users_list` example:

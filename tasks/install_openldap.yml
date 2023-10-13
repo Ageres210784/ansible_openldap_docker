@@ -58,8 +58,8 @@
       - dcObject
       - organization
     attributes:
-      dc: oom
-      o: example
+      dc: "{{ ldap_root_dc }}"
+      o: "{{ ldap_organisation }}"
   register: connect_result
   retries: 5
   delay: 3
@@ -99,9 +99,17 @@
     attributes:
       userPassword: "{{ ldap_readonly_passwordHash }}"
       cn: "{{ ldap_readonly_username }}"
-      pwdPolicySubentry: "cn=reader,ou=pwPolicies,{{ ldap_root }}"
 
-- name: OPENLDAP | Install | Create alcAccess for readonly user
+- name: OPENLDAP | Install | Change password for readonly user
+  community.general.ldap_passwd:
+    server_uri: "ldap://localhost:{{ ldap_port }}"
+    bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+    bind_pw: "{{ ldap_admin_password }}"
+    dn: "cn={{ ldap_readonly_username }},{{ ldap_root }}"
+    passwd: "{{ ldap_readonly_password }}"
+  when: ldap_readonly_password is defined
+
+- name: OPENLDAP | Install | Create alcAccess
   community.general.ldap_attrs:
     server_uri: "ldap://localhost:{{ ldap_port }}"
     bind_dn: "cn={{ ldap_admin_username }},cn=config"
@@ -195,5 +203,14 @@
           olcPPolicyHashCleartext: "FALSE"
           olcPPolicyUseLockout: "FALSE"
           olcPPolicyForwardUpdates: "FALSE"
+
+    - name: OPENLDAP | Install | Add pwdPolicySubentry to readonly user
+      community.general.ldap_attrs:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},{{ ldap_root }}"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "cn={{ ldap_readonly_username }},{{ ldap_root }}"
+        attributes:
+          pwdPolicySubentry: "cn=reader,ou=pwPolicies,{{ ldap_root }}"
 
   when: ldap_add_modules
