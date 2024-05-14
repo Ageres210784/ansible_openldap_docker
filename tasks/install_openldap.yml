@@ -109,7 +109,7 @@
     passwd: "{{ ldap_readonly_password }}"
   when: ldap_readonly_password is defined
 
-- name: OPENLDAP | Install | Create alcAccess
+- name: OPENLDAP | Install | Create olcAccess
   community.general.ldap_attrs:
     server_uri: "ldap://localhost:{{ ldap_port }}"
     bind_dn: "cn={{ ldap_admin_username }},cn=config"
@@ -121,24 +121,50 @@
 
 - name: OPENLDAP | Install | Add modules
   block:
-    - name: OPENLDAP | Install | Create cn=module{0},cn=config
+    - name: OPENLDAP | Install | Search modules
+      community.general.ldap_search:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "cn=config"
+        scope: "children"
+        attrs:
+          - "dn"
+        filter: "(&(objectClass=olcModuleList)(olcModulePath=/opt/bitnami/openldap/lib/openldap))"
+        # filter: "(&(objectClass=olcModuleList)(|{%for attrs in ldap_olcmoduleload %}(olcModuleLoad={{attrs}}){%endfor%}))"
+      register: modules_list
+
+    - name: OPENLDAP | Install | Create cn=module,cn=config
       community.general.ldap_entry:
         server_uri: "ldap://localhost:{{ ldap_port }}"
         bind_dn: "cn={{ ldap_admin_username }},cn=config"
         bind_pw: "{{ ldap_admin_password }}"
-        dn: cn=module{0},cn=config
+        dn: cn=module,cn=config
         objectClass:
           - olcModuleList
         attributes:
-          cn: module{0}
           olcModulePath: /opt/bitnami/openldap/lib/openldap
+      when:
+        - modules_list.results | length == 0
 
-    - name: OPENLDAP | Install | Add olcModuleLoad to cn=module{0},cn=config
+    - name: OPENLDAP | Install | Search modules
+      community.general.ldap_search:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "cn=config"
+        scope: "children"
+        attrs:
+          - "dn"
+        filter: "(&(objectClass=olcModuleList)(olcModulePath=/opt/bitnami/openldap/lib/openldap))"
+      register: modules_list
+
+    - name: OPENLDAP | Install | Add olcModuleLoad to cn=module,cn=config
       community.general.ldap_attrs:
         server_uri: "ldap://localhost:{{ ldap_port }}"
         bind_dn: "cn={{ ldap_admin_username }},cn=config"
         bind_pw: "{{ ldap_admin_password }}"
-        dn: cn=module{0},cn=config
+        dn: "{{ modules_list.results[-1].dn }}"
         attributes:
           olcModuleLoad: "{{ ldap_olcmoduleload }}"
 
