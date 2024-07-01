@@ -27,6 +27,7 @@
         openldap:
           image: "{{ ldap_image }}:{{ ldap_version }}"
           container_name: openldap
+          hostname: "{{ ldap_hostname }}"
           restart: always
           ports:
             - '{{ ldap_interface }}:{{ ldap_port }}:1389'
@@ -240,3 +241,93 @@
           pwdPolicySubentry: "cn=reader,ou=pwPolicies,{{ ldap_root }}"
 
   when: ldap_add_modules
+
+- name: OPENLDAP | Install | Configure replication
+  block:
+    - name: OPENLDAP | Install | Set ldap_olcserverids
+      set_fact:
+        ldap_olcserverids: "{{ ldap_olcserverids | default ([]) + [ (index + 1) | string + ' ldap://' + item + ':' + ldap_port ] }}"
+      loop: "{{ ldap_server_list }}"
+      loop_control:
+        index_var: index
+
+    - name: OPENLDAP | Install | Configure olcServerID
+      community.general.ldap_attrs:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "cn=config"
+        state: "exact"
+        attributes:
+          olcServerID: "{{ ldap_olcserverids }}"
+
+    - name: OPENLDAP | Install | Create olcOverlay=syncprov,olcDatabase={0}config,cn=config
+      community.general.ldap_entry:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: olcOverlay=syncprov,olcDatabase={0}config,cn=config
+        objectClass:
+          -  olcOverlayConfig
+          -  olcSyncProvConfig
+        attributes:
+          olcOverlay: syncprov
+
+    - name: OPENLDAP | Install | Set config_olcSyncRepls
+      set_fact:
+        config_olcSyncRepls: >-
+          {{ config_olcSyncRepls | default ([]) + [
+          'rid=00' + (index + 1) | string + ' provider=ldap://' + item + ':' + ldap_port + ' binddn="cn=' + ldap_admin_username + ',cn=config" bindmethod=simple
+          credentials=' + ldap_admin_password + ' searchbase="cn=config" type=refreshAndPersist
+          retry="5 5 300 5" timeout=1'
+           ] }}
+      loop: "{{ ldap_server_list }}"
+      loop_control:
+        index_var: index
+
+    - name: OPENLDAP | Install | Configure sync olcDatabase={0}config,cn=config
+      community.general.ldap_attrs:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: "olcDatabase={0}config,cn=config"
+        attributes:
+          olcSyncRepl: "{{ config_olcSyncRepls }}"
+          olcMirrorMode: "TRUE"
+
+    - name: OPENLDAP | Install | Set mdb_olcSyncRepls
+      set_fact:
+        mdb_olcSyncRepls: >-
+          {{ mdb_olcSyncRepls | default ([]) + [
+          'rid=10' + (index + 1) | string + ' provider=ldap://' + item + ':' + ldap_port + ' binddn="cn=' + ldap_admin_username + "," + ldap_root + '" bindmethod=simple
+          credentials=' + ldap_admin_password + ' searchbase="' + ldap_root + '" type=refreshOnly
+          interval=00:00:00:10 retry="5 5 300 5" timeout=1'
+           ] }}
+      loop: "{{ ldap_server_list }}"
+      loop_control:
+        index_var: index
+
+    - name: OPENLDAP | Install | Configure sync olcDatabase={2}mdb,cn=config
+      community.general.ldap_attrs:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: olcDatabase={2}mdb,cn=config
+        attributes:
+          olcLimits: dn.exact="cn={{ ldap_admin_username }},{{ ldap_root }}" time.soft=unlimited time.hard=unlimited size.soft=unlimited size.hard=unlimited
+          olcSyncRepl: "{{ mdb_olcSyncRepls }}"
+          olcMirrorMode: "TRUE"
+
+    - name: OPENLDAP | Install | Create olcOverlay=syncprov,olcDatabase={2}mdb,cn=config
+      community.general.ldap_entry:
+        server_uri: "ldap://localhost:{{ ldap_port }}"
+        bind_dn: "cn={{ ldap_admin_username }},cn=config"
+        bind_pw: "{{ ldap_admin_password }}"
+        dn: olcOverlay=syncprov,olcDatabase={2}mdb,cn=config
+        objectClass:
+          -  olcOverlayConfig
+          -  olcSyncProvConfig
+        attributes:
+          olcOverlay: syncprov
+
+  when: ldap_server_list | length > 1

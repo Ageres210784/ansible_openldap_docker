@@ -80,8 +80,33 @@ ldap_users_list:
 
 Example:
 ```yml
-ldap_passwd_filter: "(&(objectClass=posixAccount)(memberOf=cn={{ ansible_facts.hostname }},ou=authgroups,dc=oom,dc=ag))"
+ldap_passwd_filter: "(&(objectClass=posixAccount)(memberOf=cn={{ ansible_facts.hostname }},ou=authgroups,dc=example,dc=com))"
 ```
+- `ldap_olcmoduleload` - list of added modules.
+
+Example:
+```yml
+ldap_olcmoduleload:
+  - memberof.so
+  - ppolicy.so
+  - syncprov.so
+```
+### For replication you should:
+- change `ldap_hostname` to your host domain name (= hostname in var `ldap_server_list`)
+```yml
+ldap_hostname:
+  ldap01.example.com
+```
+- add the `syncprov.so` module to variable `ldap_olcmoduleload` in `group_vars`. Example look above
+- add all nodes to var `ldap_server_list`
+```yml
+ldap_server_list:
+  ldap01.example.com
+  ldap02.example.com
+```
+- configure iptables for accept from all other nodes to port `ldap_port`
+- if you adding another node to an existen cluster, after adding the node you should start playbook with `add_user_to_group` tag, for working `memberOf`
+
 
 Example Playbook
 ----------------
