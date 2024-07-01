@@ -1,6 +1,7 @@
 ---
 ldap_image: "bitnami/openldap"
 ldap_version: "2.6"
+ldap_hostname: ldap.example.com
 ldap_root: "dc={{ ldap_root_dc }},dc=com"
 ldap_root_dc: "example"
 ldap_organisation: "example.com"
