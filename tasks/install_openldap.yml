@@ -19,10 +19,9 @@
     - "{{ ldap_tls_cert_host_path }}"
 
 - name: OPENLDAP | Install | Start openldap container
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_name: openldap
     definition:
-      version: '3'
       services:
         openldap:
           image: "{{ ldap_image }}:{{ ldap_version }}"
